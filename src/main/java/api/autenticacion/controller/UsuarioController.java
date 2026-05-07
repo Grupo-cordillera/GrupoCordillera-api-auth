@@ -2,6 +2,7 @@ package api.autenticacion.controller;
 
 import api.autenticacion.model.Rol;
 import api.autenticacion.model.Usuario;
+import api.autenticacion.model.UsuarioRequest;
 import api.autenticacion.repository.RolRepository;
 import api.autenticacion.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,31 +35,33 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario createUsuario(@RequestBody Map<String, Object> requestBody) {
+    public Usuario createUsuario(@RequestBody UsuarioRequest request) {
         Usuario usuario = new Usuario();
-        usuario.setCorreo((String) requestBody.get("correo"));
-        usuario.setContrasena((String) requestBody.get("contrasena"));
-        usuario.setDireccion((String) requestBody.get("direccion"));
-        usuario.setTelefono((String) requestBody.get("telefono"));
+        usuario.setNombre(request.getNombre());
+        usuario.setApellido(request.getApellido());
+        usuario.setCorreo(request.getCorreo());
+        usuario.setContrasena(request.getContrasena());
+        usuario.setDireccion(request.getDireccion());
+        usuario.setTelefono(request.getTelefono());
 
-        Integer numeroRol = (Integer) requestBody.get("numero_rol");
-        Rol rol = rolRepository.findByNumeroRol(numeroRol)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado con numero_rol: " + numeroRol));
+        Rol rol = rolRepository.findByNumeroRol(request.getNumero_rol())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado con numero_rol: " + request.getNumero_rol()));
         usuario.setRol(rol);
 
         return usuarioService.saveUsuario(usuario);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody Map<String, Object> requestBody) {
+    public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody UsuarioRequest request) {
         Usuario usuarioDetails = new Usuario();
-        usuarioDetails.setCorreo((String) requestBody.get("correo"));
-        usuarioDetails.setDireccion((String) requestBody.get("direccion"));
-        usuarioDetails.setTelefono((String) requestBody.get("telefono"));
+        usuarioDetails.setNombre(request.getNombre());
+        usuarioDetails.setApellido(request.getApellido());
+        usuarioDetails.setCorreo(request.getCorreo());
+        usuarioDetails.setDireccion(request.getDireccion());
+        usuarioDetails.setTelefono(request.getTelefono());
 
-        Integer numeroRol = (Integer) requestBody.get("numero_rol");
-        Rol rol = rolRepository.findByNumeroRol(numeroRol)
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado con numero_rol: " + numeroRol));
+        Rol rol = rolRepository.findByNumeroRol(request.getNumero_rol())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado con numero_rol: " + request.getNumero_rol()));
         usuarioDetails.setRol(rol);
 
         return ResponseEntity.ok(usuarioService.updateUsuario(id, usuarioDetails));

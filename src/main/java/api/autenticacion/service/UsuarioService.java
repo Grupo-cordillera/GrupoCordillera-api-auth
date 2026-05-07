@@ -3,16 +3,32 @@ package api.autenticacion.service;
 import api.autenticacion.model.Usuario;
 import api.autenticacion.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UsuarioService {
+public class UsuarioService implements UserDetailsService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Usuario usuario = usuarioRepository.findByCorreo(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        return new User(usuario.getCorreo(), usuario.getContrasena(), new ArrayList<>());
+    }
 
     public List<Usuario> getAllUsuarios() {
         return usuarioRepository.findAll();
@@ -23,6 +39,7 @@ public class UsuarioService {
     }
 
     public Usuario saveUsuario(Usuario usuario) {
+        usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
         return usuarioRepository.save(usuario);
     }
 
@@ -41,7 +58,7 @@ public class UsuarioService {
 
     public Usuario cambioContrasena(Long id, String newPassword) {
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-        usuario.setContrasena(newPassword);
+        usuario.setContrasena(passwordEncoder.encode(newPassword));
         return usuarioRepository.save(usuario);
     }
 }
