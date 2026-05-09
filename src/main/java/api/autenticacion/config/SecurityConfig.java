@@ -33,7 +33,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtRequestFilter jwtRequestFilter) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/authenticate", "/usuarios").permitAll() // Permitimos /usuarios temporalmente para crear el primer usuario
+                        // Endpoints públicos (Login/Registro)
+                        .requestMatchers("/authenticate", "/usuarios").permitAll()
+                        // Endpoints públicos para Swagger / OpenAPI 3
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        // Cualquier otra petición requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
