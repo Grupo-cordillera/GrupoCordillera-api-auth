@@ -7,6 +7,7 @@ import api.autenticacion.repository.RolRepository;
 import api.autenticacion.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,17 +25,20 @@ public class UsuarioController {
     private RolRepository rolRepository;
 
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public List<Usuario> getAllUsuarios() {
         return usuarioService.getAllUsuarios();
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLEADO')")
     public ResponseEntity<Usuario> getUsuarioById(@PathVariable Long id) {
         Optional<Usuario> usuario = usuarioService.getUsuarioById(id);
         return usuario.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public Usuario createUsuario(@RequestBody UsuarioRequest request) {
         Usuario usuario = new Usuario();
         usuario.setNombre(request.getNombre());
@@ -52,6 +56,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody UsuarioRequest request) {
         Usuario usuarioDetails = new Usuario();
         usuarioDetails.setNombre(request.getNombre());
@@ -68,12 +73,14 @@ public class UsuarioController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
         usuarioService.deleteUsuario(id);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/change-password")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLEADO')")
     public ResponseEntity<Usuario> changePassword(@PathVariable Long id, @RequestBody Map<String, String> requestBody) {
         String newPassword = requestBody.get("newPassword");
         return ResponseEntity.ok(usuarioService.cambioContrasena(id, newPassword));
