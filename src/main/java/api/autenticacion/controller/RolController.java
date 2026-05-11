@@ -5,6 +5,7 @@ import api.autenticacion.service.RolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,11 +18,13 @@ public class RolController {
     private final RolService rolService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Rol>> obtenerRoles() {
         return ResponseEntity.ok(rolService.obtenerTodosLosRoles());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Rol> obtenerRolPorId(@PathVariable Long id) {
         return rolService.obtenerRolPorId(id)
                 .map(ResponseEntity::ok)
@@ -29,12 +32,14 @@ public class RolController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Rol> crearRol(@RequestBody Rol rol) {
         Rol nuevoRol = rolService.guardarRol(rol);
         return new ResponseEntity<>(nuevoRol, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> eliminarRol(@PathVariable Long id) {
         rolService.eliminarRol(id);
         return ResponseEntity.noContent().build();
