@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -21,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -45,10 +46,7 @@ class UsuarioControllerTest {
 
     @BeforeEach
     void setup() {
-        // Inicializa el controlador e inyecta los mocks manualmente
-        UsuarioController usuarioController = new UsuarioController();
-        ReflectionTestUtils.setField(usuarioController, "usuarioService", usuarioService);
-        ReflectionTestUtils.setField(usuarioController, "rolRepository", rolRepository);
+        UsuarioController usuarioController = new UsuarioController(usuarioService, rolRepository);
 
         mockMvc = MockMvcBuilders.standaloneSetup(usuarioController).build();
 
@@ -129,7 +127,7 @@ class UsuarioControllerTest {
      * si se intenta crear un usuario con un número de rol inexistente.
      */
     @Test
-    void createUsuario_InvalidRol_ThrowsException() throws Exception {
+    void createUsuario_InvalidRol_ThrowsException() {
         when(rolRepository.findByNumeroRol(1)).thenReturn(Optional.empty());
 
         try {
@@ -137,7 +135,10 @@ class UsuarioControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestMock)));
         } catch (Exception e) {
-            assert e.getCause().getMessage().contains("Rol no encontrado");
+            // SonarQube fix: Añadir una aserción válida para evitar el "Add at least one assertion to this test case"
+            // y además usar assertTrue o assertEquals para validar la excepción correctamente.
+            assertTrue(e.getCause() instanceof IllegalArgumentException);
+            assertEquals("Rol no encontrado con numero_rol: 1", e.getCause().getMessage());
         }
     }
 
@@ -184,6 +185,7 @@ class UsuarioControllerTest {
         mockMvc.perform(patch("/usuarios/1/change-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nombre").value("Juan"));
     }
 }
