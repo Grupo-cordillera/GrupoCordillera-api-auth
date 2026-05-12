@@ -10,6 +10,5 @@ public class UsuarioRequest {
     private String contrasena;
     private String direccion;
     private String telefono;
-    // SonarQube fix: Renombrado de numero_rol a numeroRol (camelCase)
-    private Integer numeroRol;
+    private Integer numero_rol;
 }

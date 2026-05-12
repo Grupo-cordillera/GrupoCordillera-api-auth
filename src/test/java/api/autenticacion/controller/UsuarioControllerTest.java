@@ -60,8 +60,8 @@ class UsuarioControllerTest {
         requestMock.setContrasena("password");
         requestMock.setDireccion("Dir");
         requestMock.setTelefono("123");
-        // SonarQube fix: Se actualizó el nombre de la variable de "numero_rol" a "numeroRol"
-        requestMock.setNumeroRol(1);
+        // Revertido a numero_rol ya que devolvimos el nombre en UsuarioRequest
+        requestMock.setNumero_rol(1);
     }
 
     /**
@@ -136,8 +136,6 @@ class UsuarioControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestMock)));
         } catch (Exception e) {
-            // SonarQube fix: Añadir una aserción válida para evitar el "Add at least one assertion to this test case"
-            // y además usar assertTrue o assertEquals para validar la excepción correctamente.
             assertTrue(e.getCause() instanceof IllegalArgumentException);
             assertEquals("Rol no encontrado con numero_rol: 1", e.getCause().getMessage());
         }
