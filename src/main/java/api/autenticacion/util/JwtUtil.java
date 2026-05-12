@@ -54,8 +54,10 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        // Aquí podrías añadir más información al token si quisieras, como roles.
-        // claims.put("roles", userDetails.getAuthorities());
+        // Añadir el rol al token
+        userDetails.getAuthorities().stream()
+                .findFirst() // Como el usuario tiene un solo rol, tomamos el primero.
+                .ifPresent(authority -> claims.put("rol", authority.getAuthority()));
         return createToken(claims, userDetails.getUsername());
     }
 
