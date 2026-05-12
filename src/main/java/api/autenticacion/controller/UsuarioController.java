@@ -52,8 +52,8 @@ public class UsuarioController {
         usuario.setDireccion(request.getDireccion());
         usuario.setTelefono(request.getTelefono());
 
-        Rol rol = rolRepository.findByNumeroRol(request.getNumero_rol())
-                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con numero_rol: " + request.getNumero_rol()));
+        Rol rol = rolRepository.findByNumeroRol(request.getNumeroRol())
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con numero_rol: " + request.getNumeroRol()));
         usuario.setRol(rol);
 
         Usuario nuevoUsuario = usuarioService.saveUsuario(usuario);
@@ -70,8 +70,8 @@ public class UsuarioController {
         usuarioDetails.setDireccion(request.getDireccion());
         usuarioDetails.setTelefono(request.getTelefono());
 
-        Rol rol = rolRepository.findByNumeroRol(request.getNumero_rol())
-                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con numero_rol: " + request.getNumero_rol()));
+        Rol rol = rolRepository.findByNumeroRol(request.getNumeroRol())
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con numero_rol: " + request.getNumeroRol()));
         usuarioDetails.setRol(rol);
 
         Usuario usuarioActualizado = usuarioService.updateUsuario(id, usuarioDetails);

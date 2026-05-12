@@ -41,8 +41,6 @@ class UsuarioServiceTest {
     void setUp() {
         rol = new Rol(1L, 1, "ADMIN", "Administrador");
         
-        // Se instancia usando el constructor AllArgsConstructor u setters normales
-        // para no depender de @Builder que fue removido del modelo base.
         usuario = new Usuario(
                 1L, 
                 rol, 
@@ -71,9 +69,8 @@ class UsuarioServiceTest {
     void loadUserByUsername_UserDoesNotExist_ThrowsUsernameNotFoundException() {
         when(usuarioRepository.findByCorreo(anyString())).thenReturn(Optional.empty());
 
-        assertThrows(UsernameNotFoundException.class, () -> {
-            usuarioService.loadUserByUsername("notfound@test.com");
-        });
+        assertThrows(UsernameNotFoundException.class, () -> usuarioService.loadUserByUsername("notfound@test.com"));
+        
         verify(usuarioRepository, times(1)).findByCorreo("notfound@test.com");
     }
 
@@ -84,7 +81,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findAll()).thenReturn(Arrays.asList(usuario, usuario2));
 
         List<Usuario> usuarios = usuarioService.getAllUsuarios();
-
+ 
         assertNotNull(usuarios);
         assertEquals(2, usuarios.size());
         verify(usuarioRepository, times(1)).findAll();
@@ -149,9 +146,11 @@ class UsuarioServiceTest {
     void updateUsuario_UserDoesNotExist_ThrowsException() {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            usuarioService.updateUsuario(1L, new Usuario());
-        });
+        // SonarQube fix: Refactor the code of the lambda to have only one invocation possibly throwing a runtime exception.
+        // Instanciamos la variable vacía y luego solo llamamos al método que arroja la excepción dentro del assertThrows.
+        Usuario emptyUsuario = new Usuario();
+        
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> usuarioService.updateUsuario(1L, emptyUsuario));
 
         assertEquals("Usuario no encontrado", exception.getMessage());
         verify(usuarioRepository, times(1)).findById(1L);

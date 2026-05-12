@@ -60,7 +60,8 @@ class UsuarioControllerTest {
         requestMock.setContrasena("password");
         requestMock.setDireccion("Dir");
         requestMock.setTelefono("123");
-        requestMock.setNumero_rol(1);
+        // SonarQube fix: Se actualizó el nombre de la variable de "numero_rol" a "numeroRol"
+        requestMock.setNumeroRol(1);
     }
 
     /**
