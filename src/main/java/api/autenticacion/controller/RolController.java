@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/rol")
@@ -22,9 +21,10 @@ public class RolController {
     @GetMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<RolDto>> obtenerRoles() {
+        // SonarQube fix: Reemplazar Stream.collect(Collectors.toList()) con Stream.toList()
         List<RolDto> rolesDto = rolService.obtenerTodosLosRoles().stream()
                 .map(this::convertToDto)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(rolesDto);
     }
 
