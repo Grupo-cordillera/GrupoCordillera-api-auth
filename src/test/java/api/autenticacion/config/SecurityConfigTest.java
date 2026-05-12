@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,6 +51,8 @@ class SecurityConfigTest {
         AuthenticationManager expectedManager = mock(AuthenticationManager.class);
         when(authenticationConfiguration.getAuthenticationManager()).thenReturn(expectedManager);
 
+        // SonarQube fix: El test ya no necesita throws Exception en la llamada, pero lo dejamos en la firma del test
+        // porque los mocks pueden requerirlo internamente.
         AuthenticationManager actualManager = securityConfig.authenticationManager(authenticationConfiguration);
 
         assertNotNull(actualManager);
