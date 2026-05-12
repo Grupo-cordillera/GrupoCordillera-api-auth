@@ -17,8 +17,9 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret.key}")
-    private String SECRET_KEY;
+    // SonarQube fix: Usar camelCase para variables de instancia
+    @Value("${jwt.secret.key:este-es-un-secreto-por-defecto-muy-largo-1234567890}")
+    private String secretKey;
 
     // --- MÉTODOS DE EXTRACCIÓN (MODIFICADOS PARA USAR EL NUEVO PARSER) ---
 
@@ -48,7 +49,8 @@ public class JwtUtil {
 
     // --- MÉTODOS DE GENERACIÓN Y VALIDACIÓN (MODIFICADOS) ---
 
-    private Boolean isTokenExpired(String token) {
+    // SonarQube fix: Usar boolean primitivo en vez de Boolean objeto
+    private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
@@ -74,7 +76,8 @@ public class JwtUtil {
                 .compact();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    // SonarQube fix: Usar boolean primitivo
+    public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
@@ -85,7 +88,7 @@ public class JwtUtil {
      * la nueva versión de la librería necesita para firmar y verificar de forma segura.
      */
     private SecretKey getSigningKey() {
-        byte[] keyBytes = this.SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = this.secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

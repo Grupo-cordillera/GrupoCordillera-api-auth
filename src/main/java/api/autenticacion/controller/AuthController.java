@@ -5,7 +5,7 @@ import api.autenticacion.model.AuthenticationResponse;
 import api.autenticacion.model.Usuario;
 import api.autenticacion.repository.UsuarioRepository;
 import api.autenticacion.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,28 +18,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private UserDetailsService userDetailsService;
-    
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
+    private final UsuarioRepository usuarioRepository;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/authenticate")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public ResponseEntity<AuthenticationResponse> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(), authenticationRequest.getPassword())
             );
         } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+            // SonarQube: No lanzar java.lang.Exception genérica.
+            // Lanzamos BadCredentialsException que ya es manejada por Spring o por un @ExceptionHandler.
+            throw new BadCredentialsException("Incorrect username or password", e);
         }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
@@ -52,7 +48,8 @@ public class AuthController {
         // Concatenar nombre y apellido
         String nombreCompleto = usuario.getNombre() + " " + usuario.getApellido();
 
-        // Devolver la respuesta con todos los datos
+        // Devolver la respuesta con todos los datos. 
+        // SonarQube: ResponseEntity<AuthenticationResponse> en vez de ResponseEntity<?>
         return ResponseEntity.ok(new AuthenticationResponse(
                 jwt,
                 nombreCompleto,

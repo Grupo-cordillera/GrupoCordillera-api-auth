@@ -28,13 +28,14 @@ class JwtUtilTest {
     private JwtUtil jwtUtil;
 
     private UserDetails userDetails;
-    private String secretKeyString = "este-es-un-secreto-muy-largo-y-seguro-para-probar-jwt-con-hmac-sha-256";
+    private final String secretKeyString = "este-es-un-secreto-muy-largo-y-seguro-para-probar-jwt-con-hmac-sha-256";
 
     @BeforeEach
     void setUp() {
         // Inyectamos la clave secreta en el JwtUtil usando ReflectionTestUtils
-        // porque normalmente se inyecta desde application.properties con @Value
-        ReflectionTestUtils.setField(jwtUtil, "SECRET_KEY", secretKeyString);
+        // porque normalmente se inyecta desde application.properties con @Value.
+        // SonarQube fix: Se actualizó el nombre del campo a "secretKey".
+        ReflectionTestUtils.setField(jwtUtil, "secretKey", secretKeyString);
 
         userDetails = new User("testuser", "password", new ArrayList<>());
     }
@@ -76,7 +77,8 @@ class JwtUtilTest {
     @Test
     void validateToken_ValidToken_ReturnsTrue() {
         String token = jwtUtil.generateToken(userDetails);
-        Boolean isValid = jwtUtil.validateToken(token, userDetails);
+        // SonarQube fix: Usar boolean primitivo
+        boolean isValid = jwtUtil.validateToken(token, userDetails);
 
         assertTrue(isValid);
     }
@@ -85,13 +87,14 @@ class JwtUtilTest {
     void validateToken_InvalidUsername_ReturnsFalse() {
         String token = jwtUtil.generateToken(userDetails);
         UserDetails otherUserDetails = new User("otheruser", "password", new ArrayList<>());
-        Boolean isValid = jwtUtil.validateToken(token, otherUserDetails);
+        // SonarQube fix: Usar boolean primitivo
+        boolean isValid = jwtUtil.validateToken(token, otherUserDetails);
 
         assertFalse(isValid);
     }
 
     @Test
-    void validateToken_ExpiredToken_ThrowsExpiredJwtException() throws InterruptedException {
+    void validateToken_ExpiredToken_ThrowsExpiredJwtException() {
         // Generamos un token que expira casi inmediatamente
         String token = Jwts.builder()
                 .setClaims(new HashMap<>())
@@ -103,9 +106,7 @@ class JwtUtilTest {
 
         // La validación debería fallar con una excepción porque io.jsonwebtoken lo lanza
         // cuando intenta extraer los claims de un token expirado.
-        assertThrows(ExpiredJwtException.class, () -> {
-            jwtUtil.validateToken(token, userDetails);
-        });
+        assertThrows(ExpiredJwtException.class, () -> jwtUtil.validateToken(token, userDetails));
     }
 
     private SecretKey getSigningKey() {

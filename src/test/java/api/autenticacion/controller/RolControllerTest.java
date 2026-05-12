@@ -1,6 +1,7 @@
 package api.autenticacion.controller;
 
 import api.autenticacion.model.Rol;
+import api.autenticacion.model.RolDto;
 import api.autenticacion.service.RolService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,7 @@ class RolControllerTest {
     private RolService rolService;
 
     private Rol rolMock;
+    private RolDto rolDtoMock;
 
     @BeforeEach
     void setup() {
@@ -39,6 +41,7 @@ class RolControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(rolController).build();
 
         rolMock = new Rol(1L, 1, "ROLE_ADMIN", "Admin");
+        rolDtoMock = new RolDto(1L, 1, "ROLE_ADMIN", "Admin");
     }
 
     /**
@@ -95,7 +98,7 @@ class RolControllerTest {
 
         mockMvc.perform(post("/api/rol")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(rolMock)))
+                        .content(objectMapper.writeValueAsString(rolDtoMock)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nombre").value("ROLE_ADMIN"));
     }

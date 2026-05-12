@@ -18,13 +18,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -55,17 +56,16 @@ class AuthControllerTest {
 
     @BeforeEach
     void setup() {
-        // Instanciamos el controlador a probar
-        AuthController authController = new AuthController();
-        
-        // Como los campos en AuthController usan @Autowired directamente (Field Injection),
-        // necesitamos inyectar los mocks manualmente usando ReflectionTestUtils
-        ReflectionTestUtils.setField(authController, "authenticationManager", authenticationManager);
-        ReflectionTestUtils.setField(authController, "userDetailsService", userDetailsService);
-        ReflectionTestUtils.setField(authController, "usuarioRepository", usuarioRepository);
-        ReflectionTestUtils.setField(authController, "jwtUtil", jwtUtil);
+        // SonarQube fix: Usamos constructor injection en lugar de @Autowired (Field Injection)
+        // Por lo tanto, ahora inicializamos el controlador pasándole los mocks en el constructor.
+        AuthController authController = new AuthController(
+                authenticationManager,
+                userDetailsService,
+                usuarioRepository,
+                jwtUtil
+        );
 
-        // Configuramos MockMvc en modo "standalone" (igual que en el inventario)
+        // Configuramos MockMvc en modo "standalone"
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
         authRequest = new AuthenticationRequest();
@@ -106,23 +106,19 @@ class AuthControllerTest {
     }
 
     @Test
-    void createAuthenticationToken_InvalidCredentials_ThrowsException() throws Exception {
+    void createAuthenticationToken_InvalidCredentials_ThrowsException() {
         // Simulamos que el AuthenticationManager arroja un BadCredentialsException
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Credenciales incorrectas"));
 
-        // Como usamos standaloneSetup sin un manejador global de excepciones, 
-        // Spring envuelve la excepción no capturada (Exception genérica que lanza tu método) 
-        // en una ServletException anidada, por lo que esperamos un error de servidor (500)
-        // o podemos validar el mensaje arrojado.
-        
         try {
             mockMvc.perform(post("/authenticate")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(authRequest)));
         } catch (Exception e) {
-            // Tu código arroja "throw new Exception("Incorrect username or password", e);"
-            assert e.getCause().getMessage().equals("Incorrect username or password");
+            // SonarQube fix: Ahora el código lanza BadCredentialsException, que se anida en NestedServletException
+            assertTrue(e.getCause() instanceof BadCredentialsException);
+            assertEquals("Incorrect username or password", e.getCause().getMessage());
         }
     }
 }
