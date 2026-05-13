@@ -12,10 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,10 +150,15 @@ class UsuarioControllerTest {
      */
     @Test
     void updateUsuario_ReturnsOk() throws Exception {
+        // Configuramos la autenticación en el contexto de seguridad para la prueba
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                "admin", "password", Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        
         when(rolRepository.findByNumeroRol(1)).thenReturn(Optional.of(rolMock));
         when(usuarioService.updateUsuario(eq(1L), any(Usuario.class))).thenReturn(usuarioMock);
 
         mockMvc.perform(put("/usuarios/1")
+                        .principal(auth) // Pasamos el principal a la petición MockMvc
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestMock)))
                 .andExpect(status().isOk())
