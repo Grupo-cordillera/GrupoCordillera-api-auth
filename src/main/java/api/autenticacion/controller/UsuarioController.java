@@ -10,6 +10,7 @@ import api.autenticacion.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,8 +62,8 @@ public class UsuarioController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UsuarioDto> updateUsuario(@PathVariable Long id, @RequestBody UsuarioRequest request) {
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_EMPLEADO')")
+    public ResponseEntity<UsuarioDto> updateUsuario(@PathVariable Long id, @RequestBody UsuarioRequest request, Authentication authentication) {
         Usuario usuarioDetails = new Usuario();
         usuarioDetails.setNombre(request.getNombre());
         usuarioDetails.setApellido(request.getApellido());
@@ -70,9 +71,16 @@ public class UsuarioController {
         usuarioDetails.setDireccion(request.getDireccion());
         usuarioDetails.setTelefono(request.getTelefono());
 
-        Rol rol = rolRepository.findByNumeroRol(request.getNumero_rol())
-                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con numero_rol: " + request.getNumero_rol()));
-        usuarioDetails.setRol(rol);
+        // Verificar si el usuario actual es admin
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        // Solo procesamos y actualizamos el rol si es admin y si se envió un numero_rol válido (> 0)
+        if (isAdmin && request.getNumero_rol() != null && request.getNumero_rol() > 0) {
+            Rol rol = rolRepository.findByNumeroRol(request.getNumero_rol())
+                    .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado con numero_rol: " + request.getNumero_rol()));
+            usuarioDetails.setRol(rol);
+        }
 
         Usuario usuarioActualizado = usuarioService.updateUsuario(id, usuarioDetails);
         return ResponseEntity.ok(convertToDto(usuarioActualizado));

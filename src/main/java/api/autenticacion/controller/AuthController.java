@@ -2,6 +2,7 @@ package api.autenticacion.controller;
 
 import api.autenticacion.model.AuthenticationRequest;
 import api.autenticacion.model.AuthenticationResponse;
+import api.autenticacion.model.RolDto;
 import api.autenticacion.model.Usuario;
 import api.autenticacion.repository.UsuarioRepository;
 import api.autenticacion.util.JwtUtil;
@@ -44,19 +45,28 @@ public class AuthController {
         // Buscar el usuario en la base de datos para obtener los datos extra
         Usuario usuario = usuarioRepository.findByCorreo(authenticationRequest.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado en la BD"));
-                
-        // Concatenar nombre y apellido
-        String nombreCompleto = usuario.getNombre() + " " + usuario.getApellido();
 
-        // Devolver la respuesta con todos los datos. 
+        RolDto rolDto = null;
+        if (usuario.getRol() != null) {
+            rolDto = new RolDto(
+                    usuario.getRol().getId(),
+                    usuario.getRol().getNumeroRol(),
+                    usuario.getRol().getNombre(),
+                    usuario.getRol().getFuncion()
+            );
+        }
+
+        // Devolver la respuesta con todos los datos por separado. 
         // SonarQube: ResponseEntity<AuthenticationResponse> en vez de ResponseEntity<?>
         return ResponseEntity.ok(new AuthenticationResponse(
                 jwt,
-                nombreCompleto,
+                usuario.getId(),
+                usuario.getNombre(),
+                usuario.getApellido(),
                 usuario.getCorreo(),
                 usuario.getDireccion(),
                 usuario.getTelefono(),
-                usuario.getRol().getNombre()
+                rolDto
         ));
     }
 }

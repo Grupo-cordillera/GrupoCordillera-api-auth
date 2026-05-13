@@ -52,7 +52,15 @@ public class UsuarioService implements UserDetailsService {
 
     public Usuario updateUsuario(Long id, Usuario usuarioDetails) {
         Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
-        usuario.setRol(usuarioDetails.getRol());
+        usuario.setNombre(usuarioDetails.getNombre());
+        usuario.setApellido(usuarioDetails.getApellido());
+        
+        // Si el controlador asignó un rol (porque era Admin y envió uno válido), lo actualizamos.
+        // Si no (porque es un usuario normal editando su perfil, o un Admin que no envió rol), mantenemos el que ya tiene en BD.
+        if (usuarioDetails.getRol() != null) {
+            usuario.setRol(usuarioDetails.getRol());
+        }
+
         usuario.setCorreo(usuarioDetails.getCorreo());
         usuario.setDireccion(usuarioDetails.getDireccion());
         usuario.setTelefono(usuarioDetails.getTelefono());

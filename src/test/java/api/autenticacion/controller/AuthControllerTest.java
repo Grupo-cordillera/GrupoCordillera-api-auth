@@ -100,9 +100,14 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(authRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.jwt").value("fake-jwt-token"))
-                .andExpect(jsonPath("$.nombre").value("Juan Perez"))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.nombre").value("Juan"))
+                .andExpect(jsonPath("$.apellido").value("Perez"))
                 .andExpect(jsonPath("$.correo").value("juan@test.com"))
-                .andExpect(jsonPath("$.rol").value("ADMIN"));
+                .andExpect(jsonPath("$.rol.id").value(1L))
+                .andExpect(jsonPath("$.rol.numeroRol").value(1))
+                .andExpect(jsonPath("$.rol.nombre").value("ADMIN"))
+                .andExpect(jsonPath("$.rol.funcion").value("Admin"));
     }
 
     @Test
